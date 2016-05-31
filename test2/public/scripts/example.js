@@ -6,7 +6,7 @@ var data = [
 //create ComentBox component - a simple div
 var CommentBox = React.createClass({
     getInitialState: function(){
-        return (data: []);
+        return {data: []};
     },
     loadCommentsFromServer:  function(){
         $.ajax({
@@ -16,12 +16,16 @@ var CommentBox = React.createClass({
             success:  function(data){
                 this.setState({data:data});
             }.bind(this),
-            error: function(){
+            error: function(xhr, status, err){
                 console.error(this.props.url, status, err.toString());
             }.bind(this)
         });
     },
     handleCommentSubmit: function(comment){
+        var comments = this.state.data;
+        comment.id = Date.now();
+        var newComments = comments.concat([comment]);
+        this.setState({data: newComments});
         //submit to the server and refresh the list
         $.ajax({
             url: this.props.url,
@@ -32,6 +36,7 @@ var CommentBox = React.createClass({
                 this.setState({data: data});
             }.bind(this),
             error:  function(xhr, status, err){
+                this.setState({data:comments});
                 console.error(this.props.url, status, err.toString());
             }.bind(this)
         });
@@ -74,7 +79,7 @@ var CommentForm = React.createClass({
     getInitialState: function(){
         return {author: '', text: ''};
     },
-    handleAuthorChange: function(){
+    handleAuthorChange: function(e){
         this.setState({author: e.target.value});
     },
     handleTextChange:   function(e){
@@ -131,6 +136,6 @@ var Comment = React.createClass({
 //add component instances into DOM
 ReactDOM.render(
     //<CommentBox data={data}/>,
-    <CommentBox url="/api/comments" pollInterval={2000}/>,
+    <CommentBox url="http://localhost:3000/api/comments" pollInterval={2000}/>,
     document.getElementById('content')
 );
